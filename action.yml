@@ -1,0 +1,61 @@
+name: BuildAndPublish
+description: 'Build a .NET project and publish the .nupkg to the feed'
+inputs:
+  SolutionName: 
+    description: 'Name of the Solution'
+    required: true
+  BuildSolutionType:
+    desciption: 'Build Configuration switch.'
+    default: 'Release'
+  User:
+    description: 'UserName'
+  NugetUrl:
+    description: 'Nuget URL'
+    default: "https://nuget.pkg.github.com/JacobsShed/index.json"
+  Token:
+    description: 'NugetToken'
+
+runs:
+  using: "composite"
+  
+  steps:
+  - uses: actions/checkout@v3
+  
+  - name: Setup Nuget
+    uses: NuGet/setup-nuget@v1.1.1
+    
+  - name: Clean
+    #run: dotnet clean ${{ inputs.SolutionName }}
+    run: dotnet clean && dotnet nuget locals all --clear
+    shell: bash
+     
+  - name: Setup .NET
+    uses: actions/setup-dotnet@v3.0.3
+    with:
+      dotnet-version: 5.0.x
+    
+  - name: Add organization nuget feed
+    #run: dotnet nuget add source --username ${{ inputs.User }} --password ${{ inputs.Token }} --store-password-in-clear-text --name github "https://nuget.pkg.github.com/Aligned-Vision-Group-Engineering/index.json"
+    run: dotnet nuget add source --username ${{ inputs.User }} --password ${{ inputs.Token }} --store-password-in-clear-text --name github ${{ inputs.NugetUrl }}
+    shell: bash
+
+  - name: Restore dependencies
+    run: nuget restore $SolutionName
+    shell: bash
+    
+  - name: Build
+    run: dotnet build ${{ inputs.SolutionName }} --configuration ${{ inputs.BuildSolutionType }} --no-restore
+    shell: bash
+    
+  - name: Test
+    run: dotnet test
+    shell: bash
+    
+  - name: Pack
+    id: PackForNuget
+    run: dotnet pack --configuration ${{ inputs.BuildSolutionType }}
+    shell: bash
+
+  - name: Put To Nuget - from found nupkg
+    run: dotnet nuget push **\*.nupkg --source github
+    shell: bash
