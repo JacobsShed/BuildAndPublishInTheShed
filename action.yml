@@ -14,6 +14,8 @@ inputs:
     default: "https://nuget.pkg.github.com/JacobsShed/index.json"
   Token:
     description: 'NugetToken'
+  NugetPkgKey:
+    description: 'The key to publish nuget packages.'
 
 runs:
   using: "composite"
@@ -56,5 +58,5 @@ runs:
     shell: bash
 
   - name: Put To Nuget - from found nupkg
-    run: dotnet nuget push **\*.nupkg --source github
+    run: dotnet nuget push **\*.nupkg --source github --api-key ${{ inputs.NugetPkgKey }}
     shell: bash
