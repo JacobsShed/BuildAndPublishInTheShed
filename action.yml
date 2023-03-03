@@ -35,7 +35,6 @@ runs:
       dotnet-version: 5.0.x
     
   - name: Add organization nuget feed
-    #run: dotnet nuget add source --username ${{ inputs.User }} --password ${{ inputs.Token }} --store-password-in-clear-text --name github "https://nuget.pkg.github.com/Aligned-Vision-Group-Engineering/index.json"
     run: dotnet nuget add source --username ${{ inputs.User }} --password ${{ inputs.Token }} --store-password-in-clear-text --name github ${{ inputs.NugetUrl }}
     shell: bash
 
